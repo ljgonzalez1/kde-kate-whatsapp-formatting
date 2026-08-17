@@ -2,7 +2,7 @@
 <!DOCTYPE language>
 <language name="WhatsApp"
           section="Markup"
-          version="1"
+          version="2"
           kateversion="5.0"
           extensions="*.whatsapp;*.wa"
           mimetype="text/x-whatsapp-formatting"
@@ -50,6 +50,7 @@
       <context name="Quote Line"
                attribute="Normal Text"
                lineEndContext="#pop">
+
         <IncludeRules context="Inline"/>
       </context>
 
@@ -61,6 +62,7 @@
       <context name="List Line"
                attribute="Normal Text"
                lineEndContext="#pop">
+
         <IncludeRules context="Inline"/>
       </context>
 
@@ -68,13 +70,15 @@
       <!-- ============================================================
            INLINE FORMATTING
 
-           IMPORTANT:
-           Triple backticks MUST be checked before a single backtick.
-           This ensures multiline monospace always takes precedence over
-           inline monospace.
+           Formatting with *, _ and ~ is stack-based.
 
-           Bold, strikethrough and italic only start when a matching
-           closing delimiter exists later on the same line.
+           A delimiter only opens when:
+             - it is immediately followed by non-whitespace content,
+             - a valid closing delimiter exists later on the same line.
+
+           Nested formatting must close in reverse order (LIFO).
+
+           Triple backticks MUST be checked before a single backtick.
            ============================================================ -->
       <context name="Inline"
                attribute="Normal Text"
@@ -90,40 +94,17 @@
                       attribute="Code Marker"
                       context="Inline Code"/>
 
-        <!--
-             Bold: *text*
-
-             Requires:
-               - non-whitespace immediately after the opening *,
-               - a closing * later on the same line,
-               - non-whitespace immediately before that closing *.
-        -->
+        <!-- Bold: *text* -->
         <RegExpr String="\*(?=\S)(?=[^\n]*\S\*)"
                  attribute="Bold Marker"
                  context="Bold"/>
 
-        <!--
-             Strikethrough: ~text~
-
-             Requires:
-               - non-whitespace immediately after the opening ~,
-               - a closing ~ later on the same line,
-               - non-whitespace immediately before that closing ~.
-
-             A lone or unmatched ~ therefore remains normal text.
-        -->
+        <!-- Strikethrough: ~text~ -->
         <RegExpr String="~(?=\S)(?=[^\n]*\S~)"
                  attribute="Strike Marker"
                  context="Strike"/>
 
-        <!--
-             Italic: _text_
-
-             Requires:
-               - non-whitespace immediately after the opening _,
-               - a closing _ later on the same line,
-               - non-whitespace immediately before that closing _.
-        -->
+        <!-- Italic: _text_ -->
         <RegExpr String="_(?=\S)(?=[^\n]*\S_)"
                  attribute="Italic Marker"
                  context="Italic"/>
@@ -131,18 +112,402 @@
 
 
       <!-- ============================================================
-           BOLD
+           ONE ACTIVE FORMAT
            ============================================================ -->
+
+
+      <!-- ------------------------------------------------------------
+           BOLD: *...*
+           ------------------------------------------------------------ -->
       <context name="Bold"
                attribute="Bold"
                lineEndContext="#pop">
 
-        <!-- Triple-backtick monospace takes precedence over bold. -->
+        <!-- Block monospace always takes precedence. -->
         <StringDetect String="```"
                       attribute="Code Fence"
                       context="Code Block"/>
 
-        <!-- Close bold only when * is preceded by non-whitespace. -->
+        <!-- Close the current bold context. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+
+        <!--
+             Strike may only open if it closes before the outer *.
+        -->
+        <RegExpr String="~(?=\S)(?=[^*\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Bold Strike"/>
+
+        <!--
+             Italic may only open if it closes before the outer *.
+        -->
+        <RegExpr String="_(?=\S)(?=[^*\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Bold Italic"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           STRIKETHROUGH: ~...~
+           ------------------------------------------------------------ -->
+      <context name="Strike"
+               attribute="Strike"
+               lineEndContext="#pop">
+
+        <!-- Block monospace always takes precedence. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close the current strike context. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold may only open if it closes before the outer ~.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^~\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Strike Bold"/>
+
+        <!--
+             Italic may only open if it closes before the outer ~.
+        -->
+        <RegExpr String="_(?=\S)(?=[^~\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Strike Italic"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           ITALIC: _..._
+           ------------------------------------------------------------ -->
+      <context name="Italic"
+               attribute="Italic"
+               lineEndContext="#pop">
+
+        <!-- Block monospace always takes precedence. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close the current italic context. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold may only open if it closes before the outer _.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^_\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Italic Bold"/>
+
+        <!--
+             Strike may only open if it closes before the outer _.
+        -->
+        <RegExpr String="~(?=\S)(?=[^_\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Italic Strike"/>
+      </context>
+
+
+      <!-- ============================================================
+           TWO ACTIVE FORMATS
+
+           Context names preserve opening order.
+
+           For example:
+
+             Bold Italic
+
+           means:
+
+             * outer bold
+             _ inner italic
+
+           Only the innermost delimiter may close first.
+           ============================================================ -->
+
+
+      <!-- ------------------------------------------------------------
+           * _ ... _ *
+           ------------------------------------------------------------ -->
+      <context name="Bold Italic"
+               attribute="Bold Italic"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost italic. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+
+        <!--
+             Strike must be fully contained before the inner _ closes.
+        -->
+        <RegExpr String="~(?=\S)(?=[^_\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Bold Italic Strike"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           * ~ ... ~ *
+           ------------------------------------------------------------ -->
+      <context name="Bold Strike"
+               attribute="Bold Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost strike. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+
+        <!--
+             Italic must be fully contained before the inner ~ closes.
+        -->
+        <RegExpr String="_(?=\S)(?=[^~\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Bold Strike Italic"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           _ * ... * _
+           ------------------------------------------------------------ -->
+      <context name="Italic Bold"
+               attribute="Bold Italic"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost bold. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+
+        <!--
+             Strike must be fully contained before the inner * closes.
+        -->
+        <RegExpr String="~(?=\S)(?=[^*\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Italic Bold Strike"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           _ ~ ... ~ _
+           ------------------------------------------------------------ -->
+      <context name="Italic Strike"
+               attribute="Italic Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost strike. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold must be fully contained before the inner ~ closes.
+
+             This is what makes:
+
+               _~*text*~_
+
+             valid for all three styles, while:
+
+               _~*text~*_
+
+             does NOT activate bold.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^~\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Italic Strike Bold"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           ~ * ... * ~
+           ------------------------------------------------------------ -->
+      <context name="Strike Bold"
+               attribute="Bold Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost bold. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+
+        <!--
+             Italic must be fully contained before the inner * closes.
+        -->
+        <RegExpr String="_(?=\S)(?=[^*\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Strike Bold Italic"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           ~ _ ... _ ~
+           ------------------------------------------------------------ -->
+      <context name="Strike Italic"
+               attribute="Italic Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost italic. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold must be fully contained before the inner _ closes.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^_\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Strike Italic Bold"/>
+      </context>
+
+
+      <!-- ============================================================
+           THREE ACTIVE FORMATS
+
+           All six possible opening orders are represented.
+
+           No fourth formatting context can be opened because *, _ and ~
+           are already active.
+
+           Only the innermost delimiter can close the current context.
+           This enforces proper stack / LIFO ordering.
+           ============================================================ -->
+
+
+      <!-- ------------------------------------------------------------
+           * _ ~ ... ~ _ *
+           ------------------------------------------------------------ -->
+      <context name="Bold Italic Strike"
+               attribute="Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Strike is innermost. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           * ~ _ ... _ ~ *
+           ------------------------------------------------------------ -->
+      <context name="Bold Strike Italic"
+               attribute="Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Italic is innermost. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           _ * ~ ... ~ * _
+           ------------------------------------------------------------ -->
+      <context name="Italic Bold Strike"
+               attribute="Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Strike is innermost. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           _ ~ * ... * ~ _
+           ------------------------------------------------------------ -->
+      <context name="Italic Strike Bold"
+               attribute="Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Bold is innermost. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           ~ * _ ... _ * ~
+           ------------------------------------------------------------ -->
+      <context name="Strike Bold Italic"
+               attribute="Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Italic is innermost. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ------------------------------------------------------------
+           ~ _ * ... * _ ~
+           ------------------------------------------------------------ -->
+      <context name="Strike Italic Bold"
+               attribute="Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Bold is innermost. -->
         <RegExpr String="(?&lt;=\S)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
@@ -150,62 +515,17 @@
 
 
       <!-- ============================================================
-           STRIKETHROUGH
-           ============================================================ -->
-      <context name="Strike"
-               attribute="Strike"
-               lineEndContext="#pop">
-
-        <!-- Triple-backtick monospace takes precedence over strike. -->
-        <StringDetect String="```"
-                      attribute="Code Fence"
-                      context="Code Block"/>
-
-        <!-- Close strike only when ~ is preceded by non-whitespace. -->
-        <RegExpr String="(?&lt;=\S)~"
-                 attribute="Strike Marker"
-                 context="#pop"/>
-      </context>
-
-
-      <!-- ============================================================
-           ITALIC
-           ============================================================ -->
-      <context name="Italic"
-               attribute="Italic"
-               lineEndContext="#pop">
-
-        <!-- Triple-backtick monospace takes precedence over italic. -->
-        <StringDetect String="```"
-                      attribute="Code Fence"
-                      context="Code Block"/>
-
-        <!-- Close italic only when _ is preceded by non-whitespace. -->
-        <RegExpr String="(?&lt;=\S)_"
-                 attribute="Italic Marker"
-                 context="#pop"/>
-      </context>
-
-
-      <!-- ============================================================
            INLINE MONOSPACE: `text`
 
-           Inline monospace does not process any other formatting.
+           Inline monospace does not process any additional formatting.
 
-           A triple-backtick sequence switches to the higher-priority
-           block monospace context.
+           Triple backticks have higher priority and switch to block
+           monospace.
            ============================================================ -->
       <context name="Inline Code"
                attribute="Inline Code"
                lineEndContext="#pop">
 
-        <!--
-             Triple-backtick monospace has priority over inline monospace.
-
-             #pop!Code Block:
-               1. leaves Inline Code,
-               2. enters Code Block.
-        -->
         <StringDetect String="```"
                       attribute="Code Fence"
                       context="#pop!Code Block"/>
@@ -222,29 +542,20 @@
            This is an exclusive context.
 
            While active, NO other WhatsApp formatting is interpreted.
+
+           In particular:
+             - no bold,
+             - no italic,
+             - no strikethrough,
+             - no inline monospace,
+             - no quotes,
+             - no lists,
+             - no enumerations.
+
            The only recognized token is the closing triple-backtick
            delimiter.
 
-           The opening and closing delimiters may appear:
-             - on their own lines,
-             - next to the content,
-             - on the same line,
-             - or anywhere else in the line.
-
-           Examples:
-
-             ```
-             text
-             ```
-
-             ```text
-             text```
-
-             ```text```
-
-             before ```text``` after
-
-           Single backticks inside this context have no special meaning.
+           Opening and closing delimiters may appear anywhere in a line.
            ============================================================ -->
       <context name="Code Block"
                attribute="Code Block"
@@ -261,14 +572,14 @@
     <itemDatas>
 
       <!-- ============================================================
-           BASE TEXT
+           NORMAL TEXT
            ============================================================ -->
       <itemData name="Normal Text"
                 defStyleNum="dsNormal"/>
 
 
       <!-- ============================================================
-           INLINE FORMATTING
+           SINGLE FORMAT
            ============================================================ -->
       <itemData name="Bold"
                 defStyleNum="dsNormal"
@@ -280,6 +591,35 @@
 
       <itemData name="Strike"
                 defStyleNum="dsNormal"
+                strikeOut="true"/>
+
+
+      <!-- ============================================================
+           TWO COMBINED FORMATS
+           ============================================================ -->
+      <itemData name="Bold Italic"
+                defStyleNum="dsNormal"
+                bold="true"
+                italic="true"/>
+
+      <itemData name="Bold Strike"
+                defStyleNum="dsNormal"
+                bold="true"
+                strikeOut="true"/>
+
+      <itemData name="Italic Strike"
+                defStyleNum="dsNormal"
+                italic="true"
+                strikeOut="true"/>
+
+
+      <!-- ============================================================
+           THREE COMBINED FORMATS
+           ============================================================ -->
+      <itemData name="Bold Italic Strike"
+                defStyleNum="dsNormal"
+                bold="true"
+                italic="true"
                 strikeOut="true"/>
 
 
