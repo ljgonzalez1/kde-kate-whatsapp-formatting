@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language>
+<language name="WhatsApp"
+          section="Markup"
+          version="1"
+          kateversion="5.0"
+          extensions="*.whatsapp;*.wa"
+          mimetype="text/x-whatsapp-formatting"
+          author="Community"
+          license="MIT"
+          indenter="normal">
+
+  <highlighting>
+    <contexts>
+
+      <!-- ============================================================
+           NORMAL TEXT
+           ============================================================ -->
+      <context name="Normal"
+               attribute="Normal Text"
+               lineEndContext="#stay">
+
+        <!-- Quotes are only recognized at the start of a line. -->
+        <RegExpr String="^&gt;\s?"
+                 attribute="Quote Marker"
+                 context="Quote Line"
+                 column="0"/>
+
+        <!-- Unordered lists: one level only. -->
+        <RegExpr String="^(?:\*|-)\s+"
+                 attribute="List Marker"
+                 context="List Line"
+                 column="0"/>
+
+        <!-- Ordered lists: one level only. -->
+        <RegExpr String="^\d+\.\s+"
+                 attribute="Number Marker"
+                 context="List Line"
+                 column="0"/>
+
+        <IncludeRules context="Inline"/>
+      </context>
+
+
+      <!-- ============================================================
+           QUOTE LINE
+           Structural nesting is intentionally not supported.
+           Inline formatting is still allowed.
+           ============================================================ -->
+      <context name="Quote Line"
+               attribute="Normal Text"
+               lineEndContext="#pop">
+        <IncludeRules context="Inline"/>
+      </context>
+
+
+      <!-- ============================================================
+           LIST / ENUMERATION LINE
+           Only one structural level is supported.
+           ============================================================ -->
+      <context name="List Line"
+               attribute="Normal Text"
+               lineEndContext="#pop">
+        <IncludeRules context="Inline"/>
+      </context>
+
+
+      <!-- ============================================================
+           INLINE FORMATTING
+
+           IMPORTANT:
+           Triple backticks MUST be checked before a single backtick.
+           This ensures multiline monospace always takes precedence over
+           inline monospace.
+           ============================================================ -->
+      <context name="Inline"
+               attribute="Normal Text"
+               lineEndContext="#stay">
+
+        <!-- Multiline / block monospace. Delimiters may appear anywhere. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Inline monospace. -->
+        <StringDetect String="`"
+                      attribute="Code Marker"
+                      context="Inline Code"/>
+
+        <!-- Bold: *text* -->
+        <RegExpr String="\*(?=\S)"
+                 attribute="Bold Marker"
+                 context="Bold"/>
+
+        <!-- Strikethrough: ~text~ -->
+        <RegExpr String="~(?=\S)"
+                 attribute="Strike Marker"
+                 context="Strike"/>
+
+        <!-- Italic: _text_ -->
+        <RegExpr String="_(?=\S)"
+                 attribute="Italic Marker"
+                 context="Italic"/>
+      </context>
+
+
+      <!-- ============================================================
+           BOLD
+           ============================================================ -->
+      <context name="Bold"
+               attribute="Bold"
+               lineEndContext="#pop">
+
+        <!-- Triple-backtick monospace takes precedence over bold. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ============================================================
+           STRIKETHROUGH
+           ============================================================ -->
+      <context name="Strike"
+               attribute="Strike"
+               lineEndContext="#pop">
+
+        <!-- Triple-backtick monospace takes precedence over strike. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ============================================================
+           ITALIC
+           ============================================================ -->
+      <context name="Italic"
+               attribute="Italic"
+               lineEndContext="#pop">
+
+        <!-- Triple-backtick monospace takes precedence over italic. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+      </context>
+
+
+      <!-- ============================================================
+           INLINE MONOSPACE: `text`
+
+           Inline monospace does not process other formatting.
+           A triple-backtick sequence switches to the higher-priority
+           block monospace context.
+           ============================================================ -->
+      <context name="Inline Code"
+               attribute="Inline Code"
+               lineEndContext="#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="#pop!Code Block"/>
+
+        <DetectChar char="`"
+                    attribute="Code Marker"
+                    context="#pop"/>
+      </context>
+
+
+      <!-- ============================================================
+           BLOCK / MULTILINE MONOSPACE: ```text```
+
+           This is an exclusive context. While active, NO other WhatsApp
+           formatting is interpreted. The only recognized token is the
+           closing triple-backtick delimiter.
+
+           The opening and closing delimiters may appear:
+             - on their own lines,
+             - next to the content,
+             - on the same line,
+             - or anywhere else in the line.
+           ============================================================ -->
+      <context name="Code Block"
+               attribute="Code Block"
+               lineEndContext="#stay">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="#pop"/>
+      </context>
+
+    </contexts>
+
+
+    <itemDatas>
+      <itemData name="Normal Text"
+                defStyleNum="dsNormal"/>
+
+      <itemData name="Bold"
+                defStyleNum="dsNormal"
+                bold="true"/>
+
+      <itemData name="Italic"
+                defStyleNum="dsNormal"
+                italic="true"/>
+
+      <itemData name="Strike"
+                defStyleNum="dsNormal"
+                strikeOut="true"/>
+
+      <itemData name="Inline Code"
+                defStyleNum="dsVerbatimString"
+                spellChecking="false"/>
+
+      <itemData name="Code Block"
+                defStyleNum="dsVerbatimString"
+                spellChecking="false"/>
+
+      <itemData name="Bold Marker"
+                defStyleNum="dsOperator"
+                bold="true"/>
+
+      <itemData name="Italic Marker"
+                defStyleNum="dsOperator"/>
+
+      <itemData name="Strike Marker"
+                defStyleNum="dsOperator"
+                strikeOut="true"/>
+
+      <itemData name="Code Marker"
+                defStyleNum="dsSpecialChar"/>
+
+      <itemData name="Code Fence"
+                defStyleNum="dsSpecialString"
+                bold="true"/>
+
+      <itemData name="Quote Marker"
+                defStyleNum="dsInformation"
+                bold="true"/>
+
+      <itemData name="List Marker"
+                defStyleNum="dsKeyword"
+                bold="true"/>
+
+      <itemData name="Number Marker"
+                defStyleNum="dsDecVal"
+                bold="true"/>
+    </itemDatas>
+  </highlighting>
+
+
+  <general>
+    <keywords casesensitive="1"/>
+    <folding indentationsensitive="0"/>
+  </general>
+
+</language>
