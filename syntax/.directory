@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Directory
+
+Name=Syntax
+Name[en]=Syntax
+Name[es]=Sintaxis
+Name[en_US]=Syntax
+Name[en_GB]=Syntax
+Name[es_MX]=Sintaxis
+Name[es_ES]=Sintaxis
+Name[es_CL]=Sintaxis
+
+Comment=WhatsApp syntax highlighting XML extension
+Comment[en]=WhatsApp syntax highlighting XML extension
+Comment[es]=Extensión XML para resaltado de sintaxis de WhatsApp
+Comment[en_US]=WhatsApp syntax highlighting XML extension
+Comment[en_GB]=WhatsApp syntax highlighting XML extension
+Comment[es_MX]=Extensión XML para resaltado de sintaxis de WhatsApp
+Comment[es_ES]=Extensión XML para resaltado de sintaxis de WhatsApp
+Comment[es_CL]=Extensión XML para resaltado de sintaxis de WhatsApp
+
+Icon=folder-extension

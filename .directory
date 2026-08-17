@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Directory
+
+Name=WhatsApp Formatting Syntax for KDE Kate
+Name[en]=WhatsApp Formatting Syntax for KDE Kate
+Name[es]=Sintaxis de formato de WhatsApp para KDE Kate
+Name[en_US]=WhatsApp Formatting Syntax for KDE Kate
+Name[en_GB]=WhatsApp Formatting Syntax for KDE Kate
+Name[es_MX]=Sintaxis de formato de WhatsApp para KDE Kate
+Name[es_ES]=Sintaxis de formato de WhatsApp para KDE Kate
+Name[es_CL]=Sintaxis de formato de WhatsApp para KDE Kate
+
+Comment=Project containing a KSyntaxHighlighting definition and supporting files for WhatsApp formatting syntax in KDE Kate
+Comment[en]=Project containing a KSyntaxHighlighting definition and supporting files for WhatsApp formatting syntax in KDE Kate
+Comment[es]=Proyecto que contiene una definición de KSyntaxHighlighting y archivos auxiliares para la sintaxis de formato de WhatsApp en KDE Kate
+Comment[en_US]=Project containing a KSyntaxHighlighting definition and supporting files for WhatsApp formatting syntax in KDE Kate
+Comment[en_GB]=Project containing a KSyntaxHighlighting definition and supporting files for WhatsApp formatting syntax in KDE Kate
+Comment[es_MX]=Proyecto que contiene una definición de KSyntaxHighlighting y archivos auxiliares para la sintaxis de formato de WhatsApp en KDE Kate
+Comment[es_ES]=Proyecto que contiene una definición de KSyntaxHighlighting y archivos auxiliares para la sintaxis de formato de WhatsApp en KDE Kate
+Comment[es_CL]=Proyecto que contiene una definición de KSyntaxHighlighting y archivos auxiliares para la sintaxis de formato de WhatsApp en KDE Kate
+
+Icon=folder-orange
