@@ -1,0 +1,46 @@
+WhatsApp formatting samples
+
+*Bold text*
+_Italic text_
+~Strikethrough text~
+`Inline monospace`
+
+> This is a quote
+
+* First item
+* Second item
+
+- First item
+- Second item
+
+1. First item
+2. Second item
+
+Triple-backtick monospace examples:
+
+``` multiline monospace starts on opening line
+continues here
+```
+
+```no-space-after-opening
+continues here
+```
+
+``` starts and ends on the same line```
+
+```
+starts on the next line and closes here```
+
+before ```monospace in the middle``` after
+
+Inside triple-backtick monospace, formatting must remain inactive:
+
+```
+*not bold*
+_not italic_
+~not struck through~
+`not inline monospace`
+> not a quote
+* not a list
+1. not an enumeration
+```
