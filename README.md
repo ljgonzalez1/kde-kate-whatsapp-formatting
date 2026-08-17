@@ -86,7 +86,7 @@ The syntax should be installed to:
 ~/.local/share/org.kde.syntax-highlighting/syntax/whatsapp.xml
 ```
 
-Then restart Kate
+Then restart **all instances** Kate
 
 
 ### Manual installation
@@ -103,7 +103,7 @@ to:
 ~/.local/share/org.kde.syntax-highlighting/syntax/whatsapp.xml
 ```
 
-Then restart Kate
+Then restart **all instances** Kate
 
 
 ## Using it in Kate
@@ -132,7 +132,7 @@ Run:
 make uninstall
 ```
 
-Then restart the application.
+Then restart **all instances** of the application.
 
 
 ## License
