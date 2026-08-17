@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Directory
+
+Name=Example
+Name[en]=Example
+Name[es]=Ejemplo
+Name[en_US]=Example
+Name[en_GB]=Example
+Name[es_MX]=Ejemplo
+Name[es_ES]=Ejemplo
+Name[es_CL]=Ejemplo
+
+Comment=Folder containing an example of the project syntax and formatting
+Comment[en]=Folder containing an example of the project syntax and formatting
+Comment[es]=Carpeta que contiene un ejemplo de la sintaxis y el formato del proyecto
+Comment[en_US]=Folder containing an example of the project syntax and formatting
+Comment[en_GB]=Folder containing an example of the project syntax and formatting
+Comment[es_MX]=Carpeta que contiene un ejemplo de la sintaxis y el formato del proyecto
+Comment[es_ES]=Carpeta que contiene un ejemplo de la sintaxis y el formato del proyecto
+Comment[es_CL]=Carpeta que contiene un ejemplo de la sintaxis y el formato del proyecto
+
+Icon=folder-text
