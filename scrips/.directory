@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Directory
+
+Name=Scripts
+Name[en]=Scripts
+Name[es]=Scripts
+Name[en_US]=Scripts
+Name[en_GB]=Scripts
+Name[es_MX]=Scripts
+Name[es_ES]=Scripts
+Name[es_CL]=Scripts
+
+Comment=Folder containing the project installation and removal scripts
+Comment[en]=Folder containing the project installation and removal scripts
+Comment[es]=Carpeta que contiene los scripts de instalación y remoción del proyecto
+Comment[en_US]=Folder containing the project installation and removal scripts
+Comment[en_GB]=Folder containing the project installation and removal scripts
+Comment[es_MX]=Carpeta que contiene los scripts de instalación y remoción del proyecto
+Comment[es_ES]=Carpeta que contiene los scripts de instalación y eliminación del proyecto
+Comment[es_CL]=Carpeta que contiene los scripts de instalación y eliminación del proyecto
+
+Icon=folder-development
