@@ -48,10 +48,10 @@
            Inline formatting is still allowed.
            ============================================================ -->
       <context name="Quote Line"
-               attribute="Normal Text"
+               attribute="Quote"
                lineEndContext="#pop">
 
-        <IncludeRules context="Inline"/>
+        <IncludeRules context="Quote Inline"/>
       </context>
 
 
@@ -515,6 +515,409 @@
 
 
       <!-- ============================================================
+           QUOTED INLINE STACK
+
+           KSyntaxHighlighting has no style inheritance: a context gets
+           exactly one itemData, so quoted text cannot simply "inherit"
+           the quote colour from the line it sits on.
+
+           Therefore every inline context above has a quote-coloured
+           twin here. The rules are identical; only the attribute and
+           the target context names differ.
+
+           This mirrors how KDE's own Markdown definition handles
+           blockquotes ("Blockquote: Strong Text" and friends).
+
+           Monospace is deliberately NOT duplicated: code keeps its own
+           verbatim colour inside a quote, exactly as outside one.
+           ============================================================ -->
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Inline
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Inline"
+               attribute="Quote"
+               lineEndContext="#stay">
+
+        <!-- Multiline / block monospace. Delimiters may appear anywhere. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Inline monospace. -->
+        <StringDetect String="`"
+                      attribute="Code Marker"
+                      context="Inline Code"/>
+
+        <!-- Bold: *text* -->
+        <RegExpr String="\*(?=\S)(?=[^\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Quote Bold"/>
+
+        <!-- Strikethrough: ~text~ -->
+        <RegExpr String="~(?=\S)(?=[^\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Quote Strike"/>
+
+        <!-- Italic: _text_ -->
+        <RegExpr String="_(?=\S)(?=[^\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Quote Italic"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Bold
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Bold"
+               attribute="Quote Bold"
+               lineEndContext="#pop">
+
+        <!-- Block monospace always takes precedence. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close the current bold context. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+
+        <!--
+             Strike may only open if it closes before the outer *.
+        -->
+        <RegExpr String="~(?=\S)(?=[^*\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Quote Bold Strike"/>
+
+        <!--
+             Italic may only open if it closes before the outer *.
+        -->
+        <RegExpr String="_(?=\S)(?=[^*\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Quote Bold Italic"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Strike
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Strike"
+               attribute="Quote Strike"
+               lineEndContext="#pop">
+
+        <!-- Block monospace always takes precedence. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close the current strike context. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold may only open if it closes before the outer ~.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^~\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Quote Strike Bold"/>
+
+        <!--
+             Italic may only open if it closes before the outer ~.
+        -->
+        <RegExpr String="_(?=\S)(?=[^~\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Quote Strike Italic"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Italic
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Italic"
+               attribute="Quote Italic"
+               lineEndContext="#pop">
+
+        <!-- Block monospace always takes precedence. -->
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close the current italic context. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold may only open if it closes before the outer _.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^_\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Quote Italic Bold"/>
+
+        <!--
+             Strike may only open if it closes before the outer _.
+        -->
+        <RegExpr String="~(?=\S)(?=[^_\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Quote Italic Strike"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Bold Italic
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Bold Italic"
+               attribute="Quote Bold Italic"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost italic. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+
+        <!--
+             Strike must be fully contained before the inner _ closes.
+        -->
+        <RegExpr String="~(?=\S)(?=[^_\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Quote Bold Italic Strike"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Bold Strike
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Bold Strike"
+               attribute="Quote Bold Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost strike. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+
+        <!--
+             Italic must be fully contained before the inner ~ closes.
+        -->
+        <RegExpr String="_(?=\S)(?=[^~\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Quote Bold Strike Italic"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Italic Bold
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Italic Bold"
+               attribute="Quote Bold Italic"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost bold. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+
+        <!--
+             Strike must be fully contained before the inner * closes.
+        -->
+        <RegExpr String="~(?=\S)(?=[^*\n]*\S~)"
+                 attribute="Strike Marker"
+                 context="Quote Italic Bold Strike"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Italic Strike
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Italic Strike"
+               attribute="Quote Italic Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost strike. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold must be fully contained before the inner ~ closes.
+
+             This is what makes:
+
+               _~*text*~_
+
+             valid for all three styles, while:
+
+               _~*text~*_
+
+             does NOT activate bold.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^~\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Quote Italic Strike Bold"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Strike Bold
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Strike Bold"
+               attribute="Quote Bold Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost bold. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+
+        <!--
+             Italic must be fully contained before the inner * closes.
+        -->
+        <RegExpr String="_(?=\S)(?=[^*\n]*\S_)"
+                 attribute="Italic Marker"
+                 context="Quote Strike Bold Italic"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Strike Italic
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Strike Italic"
+               attribute="Quote Italic Strike"
+               lineEndContext="#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Close innermost italic. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+
+        <!--
+             Bold must be fully contained before the inner _ closes.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^_\n]*\S\*)"
+                 attribute="Bold Marker"
+                 context="Quote Strike Italic Bold"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Bold Italic Strike
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Bold Italic Strike"
+               attribute="Quote Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Strike is innermost. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Bold Strike Italic
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Bold Strike Italic"
+               attribute="Quote Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Italic is innermost. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Italic Bold Strike
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Italic Bold Strike"
+               attribute="Quote Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Strike is innermost. -->
+        <RegExpr String="(?&lt;=\S)~"
+                 attribute="Strike Marker"
+                 context="#pop"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Italic Strike Bold
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Italic Strike Bold"
+               attribute="Quote Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Bold is innermost. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Strike Bold Italic
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Strike Bold Italic"
+               attribute="Quote Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Italic is innermost. -->
+        <RegExpr String="(?&lt;=\S)_"
+                 attribute="Italic Marker"
+                 context="#pop"/>
+      </context>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           Quote Strike Italic Bold
+           - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <context name="Quote Strike Italic Bold"
+               attribute="Quote Bold Italic Strike"
+               lineEndContext="#pop#pop#pop">
+
+        <StringDetect String="```"
+                      attribute="Code Fence"
+                      context="Code Block"/>
+
+        <!-- Bold is innermost. -->
+        <RegExpr String="(?&lt;=\S)\*"
+                 attribute="Bold Marker"
+                 context="#pop"/>
+      </context>
+
+      <!-- ============================================================
            INLINE MONOSPACE: `text`
 
            Inline monospace does not process any additional formatting.
@@ -624,6 +1027,51 @@
 
 
       <!-- ============================================================
+           QUOTED TEXT
+
+           dsAttribute is the default style KDE's Markdown definition
+           uses for blockquotes, so quoted lines pick up a sensible
+           colour from whichever theme is active instead of a
+           hardcoded one.
+           ============================================================ -->
+      <itemData name="Quote"
+                defStyleNum="dsAttribute"/>
+
+      <itemData name="Quote Bold"
+                defStyleNum="dsAttribute"
+                bold="true"/>
+
+      <itemData name="Quote Italic"
+                defStyleNum="dsAttribute"
+                italic="true"/>
+
+      <itemData name="Quote Strike"
+                defStyleNum="dsAttribute"
+                strikeOut="true"/>
+
+      <itemData name="Quote Bold Italic"
+                defStyleNum="dsAttribute"
+                bold="true"
+                italic="true"/>
+
+      <itemData name="Quote Bold Strike"
+                defStyleNum="dsAttribute"
+                bold="true"
+                strikeOut="true"/>
+
+      <itemData name="Quote Italic Strike"
+                defStyleNum="dsAttribute"
+                italic="true"
+                strikeOut="true"/>
+
+      <itemData name="Quote Bold Italic Strike"
+                defStyleNum="dsAttribute"
+                bold="true"
+                italic="true"
+                strikeOut="true"/>
+
+
+      <!-- ============================================================
            MONOSPACE
            ============================================================ -->
       <itemData name="Inline Code"
@@ -661,7 +1109,7 @@
            STRUCTURAL MARKERS
            ============================================================ -->
       <itemData name="Quote Marker"
-                defStyleNum="dsInformation"
+                defStyleNum="dsAttribute"
                 bold="true"/>
 
       <itemData name="List Marker"
