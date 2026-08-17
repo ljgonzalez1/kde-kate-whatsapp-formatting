@@ -21,19 +21,19 @@
                lineEndContext="#stay">
 
         <!-- Quotes are only recognized at the start of a line. -->
-        <RegExpr String="^&gt;\s?"
+        <RegExpr String="^&gt;\s?(?=.*\S)"
                  attribute="Quote Marker"
                  context="Quote Line"
                  column="0"/>
 
         <!-- Unordered lists: one level only. -->
-        <RegExpr String="^(?:\*|-)\s+"
+        <RegExpr String="^(?:\*|-)\s+(?=\S)"
                  attribute="List Marker"
                  context="List Line"
                  column="0"/>
 
         <!-- Ordered lists: one level only. -->
-        <RegExpr String="^\d+\.\s+"
+        <RegExpr String="^\d+\.\s+(?=\S)"
                  attribute="Number Marker"
                  context="List Line"
                  column="0"/>
@@ -90,9 +90,9 @@
                       context="Code Block"/>
 
         <!-- Inline monospace. -->
-        <StringDetect String="`"
-                      attribute="Code Marker"
-                      context="Inline Code"/>
+        <RegExpr String="`(?=[^\n]+`)"
+                 attribute="Code Marker"
+                 context="Inline Code"/>
 
         <!-- Bold: *text* -->
         <RegExpr String="\*(?=\S)(?=[^\n]*\S\*)"
@@ -129,7 +129,7 @@
                       context="Code Block"/>
 
         <!-- Close the current bold context. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
 
@@ -162,7 +162,7 @@
                       context="Code Block"/>
 
         <!-- Close the current strike context. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
 
@@ -195,7 +195,7 @@
                       context="Code Block"/>
 
         <!-- Close the current italic context. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
 
@@ -245,7 +245,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost italic. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
 
@@ -270,7 +270,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost strike. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
 
@@ -295,7 +295,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost bold. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
 
@@ -320,7 +320,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost strike. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
 
@@ -355,7 +355,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost bold. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
 
@@ -380,7 +380,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost italic. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
 
@@ -418,7 +418,7 @@
                       context="Code Block"/>
 
         <!-- Strike is innermost. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
       </context>
@@ -436,7 +436,7 @@
                       context="Code Block"/>
 
         <!-- Italic is innermost. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
       </context>
@@ -454,7 +454,7 @@
                       context="Code Block"/>
 
         <!-- Strike is innermost. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
       </context>
@@ -472,7 +472,7 @@
                       context="Code Block"/>
 
         <!-- Bold is innermost. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
       </context>
@@ -490,7 +490,7 @@
                       context="Code Block"/>
 
         <!-- Italic is innermost. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
       </context>
@@ -508,7 +508,7 @@
                       context="Code Block"/>
 
         <!-- Bold is innermost. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
       </context>
@@ -545,9 +545,9 @@
                       context="Code Block"/>
 
         <!-- Inline monospace. -->
-        <StringDetect String="`"
-                      attribute="Code Marker"
-                      context="Inline Code"/>
+        <RegExpr String="`(?=[^\n]+`)"
+                 attribute="Code Marker"
+                 context="Inline Code"/>
 
         <!-- Bold: *text* -->
         <RegExpr String="\*(?=\S)(?=[^\n]*\S\*)"
@@ -578,7 +578,7 @@
                       context="Code Block"/>
 
         <!-- Close the current bold context. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
 
@@ -610,7 +610,7 @@
                       context="Code Block"/>
 
         <!-- Close the current strike context. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
 
@@ -642,7 +642,7 @@
                       context="Code Block"/>
 
         <!-- Close the current italic context. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
 
@@ -673,7 +673,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost italic. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
 
@@ -697,7 +697,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost strike. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
 
@@ -721,7 +721,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost bold. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
 
@@ -745,7 +745,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost strike. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
 
@@ -779,7 +779,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost bold. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
 
@@ -803,7 +803,7 @@
                       context="Code Block"/>
 
         <!-- Close innermost italic. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
 
@@ -827,7 +827,7 @@
                       context="Code Block"/>
 
         <!-- Strike is innermost. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
       </context>
@@ -844,7 +844,7 @@
                       context="Code Block"/>
 
         <!-- Italic is innermost. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
       </context>
@@ -861,7 +861,7 @@
                       context="Code Block"/>
 
         <!-- Strike is innermost. -->
-        <RegExpr String="(?&lt;=\S)~"
+        <RegExpr String="(?&lt;=[^\s~])~|(?&lt;=~~)~"
                  attribute="Strike Marker"
                  context="#pop"/>
       </context>
@@ -878,7 +878,7 @@
                       context="Code Block"/>
 
         <!-- Bold is innermost. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
       </context>
@@ -895,7 +895,7 @@
                       context="Code Block"/>
 
         <!-- Italic is innermost. -->
-        <RegExpr String="(?&lt;=\S)_"
+        <RegExpr String="(?&lt;=[^\s_])_|(?&lt;=__)_"
                  attribute="Italic Marker"
                  context="#pop"/>
       </context>
@@ -912,7 +912,7 @@
                       context="Code Block"/>
 
         <!-- Bold is innermost. -->
-        <RegExpr String="(?&lt;=\S)\*"
+        <RegExpr String="(?&lt;=[^\s\*])\*|(?&lt;=\*\*)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
       </context>
@@ -933,9 +933,9 @@
                       attribute="Code Fence"
                       context="#pop!Code Block"/>
 
-        <DetectChar char="`"
-                    attribute="Code Marker"
-                    context="#pop"/>
+        <RegExpr String="(?&lt;=[^`])`|(?&lt;=``)`"
+                 attribute="Code Marker"
+                 context="#pop"/>
       </context>
 
 
