@@ -1,0 +1,11 @@
+.env
+
+.vscode/
+
+*.swp
+*.swo
+*~
+
+*.tmp
+*.bak
+*.old
