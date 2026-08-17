@@ -72,6 +72,9 @@
            Triple backticks MUST be checked before a single backtick.
            This ensures multiline monospace always takes precedence over
            inline monospace.
+
+           Bold, strikethrough and italic only start when a matching
+           closing delimiter exists later on the same line.
            ============================================================ -->
       <context name="Inline"
                attribute="Normal Text"
@@ -87,18 +90,41 @@
                       attribute="Code Marker"
                       context="Inline Code"/>
 
-        <!-- Bold: *text* -->
-        <RegExpr String="\*(?=\S)"
+        <!--
+             Bold: *text*
+
+             Requires:
+               - non-whitespace immediately after the opening *,
+               - a closing * later on the same line,
+               - non-whitespace immediately before that closing *.
+        -->
+        <RegExpr String="\*(?=\S)(?=[^\n]*\S\*)"
                  attribute="Bold Marker"
                  context="Bold"/>
 
-        <!-- Strikethrough: ~text~ -->
-        <RegExpr String="~(?=\S)"
+        <!--
+             Strikethrough: ~text~
+
+             Requires:
+               - non-whitespace immediately after the opening ~,
+               - a closing ~ later on the same line,
+               - non-whitespace immediately before that closing ~.
+
+             A lone or unmatched ~ therefore remains normal text.
+        -->
+        <RegExpr String="~(?=\S)(?=[^\n]*\S~)"
                  attribute="Strike Marker"
                  context="Strike"/>
 
-        <!-- Italic: _text_ -->
-        <RegExpr String="_(?=\S)"
+        <!--
+             Italic: _text_
+
+             Requires:
+               - non-whitespace immediately after the opening _,
+               - a closing _ later on the same line,
+               - non-whitespace immediately before that closing _.
+        -->
+        <RegExpr String="_(?=\S)(?=[^\n]*\S_)"
                  attribute="Italic Marker"
                  context="Italic"/>
       </context>
@@ -116,6 +142,7 @@
                       attribute="Code Fence"
                       context="Code Block"/>
 
+        <!-- Close bold only when * is preceded by non-whitespace. -->
         <RegExpr String="(?&lt;=\S)\*"
                  attribute="Bold Marker"
                  context="#pop"/>
@@ -134,6 +161,7 @@
                       attribute="Code Fence"
                       context="Code Block"/>
 
+        <!-- Close strike only when ~ is preceded by non-whitespace. -->
         <RegExpr String="(?&lt;=\S)~"
                  attribute="Strike Marker"
                  context="#pop"/>
@@ -152,6 +180,7 @@
                       attribute="Code Fence"
                       context="Code Block"/>
 
+        <!-- Close italic only when _ is preceded by non-whitespace. -->
         <RegExpr String="(?&lt;=\S)_"
                  attribute="Italic Marker"
                  context="#pop"/>
@@ -161,7 +190,8 @@
       <!-- ============================================================
            INLINE MONOSPACE: `text`
 
-           Inline monospace does not process other formatting.
+           Inline monospace does not process any other formatting.
+
            A triple-backtick sequence switches to the higher-priority
            block monospace context.
            ============================================================ -->
@@ -169,6 +199,13 @@
                attribute="Inline Code"
                lineEndContext="#pop">
 
+        <!--
+             Triple-backtick monospace has priority over inline monospace.
+
+             #pop!Code Block:
+               1. leaves Inline Code,
+               2. enters Code Block.
+        -->
         <StringDetect String="```"
                       attribute="Code Fence"
                       context="#pop!Code Block"/>
@@ -182,15 +219,32 @@
       <!-- ============================================================
            BLOCK / MULTILINE MONOSPACE: ```text```
 
-           This is an exclusive context. While active, NO other WhatsApp
-           formatting is interpreted. The only recognized token is the
-           closing triple-backtick delimiter.
+           This is an exclusive context.
+
+           While active, NO other WhatsApp formatting is interpreted.
+           The only recognized token is the closing triple-backtick
+           delimiter.
 
            The opening and closing delimiters may appear:
              - on their own lines,
              - next to the content,
              - on the same line,
              - or anywhere else in the line.
+
+           Examples:
+
+             ```
+             text
+             ```
+
+             ```text
+             text```
+
+             ```text```
+
+             before ```text``` after
+
+           Single backticks inside this context have no special meaning.
            ============================================================ -->
       <context name="Code Block"
                attribute="Code Block"
@@ -205,9 +259,17 @@
 
 
     <itemDatas>
+
+      <!-- ============================================================
+           BASE TEXT
+           ============================================================ -->
       <itemData name="Normal Text"
                 defStyleNum="dsNormal"/>
 
+
+      <!-- ============================================================
+           INLINE FORMATTING
+           ============================================================ -->
       <itemData name="Bold"
                 defStyleNum="dsNormal"
                 bold="true"/>
@@ -220,6 +282,10 @@
                 defStyleNum="dsNormal"
                 strikeOut="true"/>
 
+
+      <!-- ============================================================
+           MONOSPACE
+           ============================================================ -->
       <itemData name="Inline Code"
                 defStyleNum="dsVerbatimString"
                 spellChecking="false"/>
@@ -228,6 +294,10 @@
                 defStyleNum="dsVerbatimString"
                 spellChecking="false"/>
 
+
+      <!-- ============================================================
+           FORMAT MARKERS
+           ============================================================ -->
       <itemData name="Bold Marker"
                 defStyleNum="dsOperator"
                 bold="true"/>
@@ -246,6 +316,10 @@
                 defStyleNum="dsSpecialString"
                 bold="true"/>
 
+
+      <!-- ============================================================
+           STRUCTURAL MARKERS
+           ============================================================ -->
       <itemData name="Quote Marker"
                 defStyleNum="dsInformation"
                 bold="true"/>
@@ -257,6 +331,7 @@
       <itemData name="Number Marker"
                 defStyleNum="dsDecVal"
                 bold="true"/>
+
     </itemDatas>
   </highlighting>
 
